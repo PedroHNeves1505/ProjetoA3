@@ -1,32 +1,34 @@
-// Muitas transações para CPFs/CNPJs diferentes em curto período.
-import java.util.ArrayList;
+import java.util.*;
 
 public class VerificacaoMultiplaDestinatarios {
+    
+    private final List<String> destinatariosRecentes = new ArrayList<>();
+    private final Timer timer = new Timer();
+    private boolean acusarCpfCnpj = false;
 
-    // verificar CPF/CNPJ
-    ArrayList<Integer> C = new ArrayList<>();
-    int quantidadeAnterior = 0, quantidadeC, temporizador;
-    boolean verificarC, acusarC;
-
-
-    public void acusar(){
-        int quantidadeC = C.size();
-
-        // falta adcionar a questão do curto periodo
-        // modificar a qntd que a subtração dá 
-        // modificar a mensagem para um aviso na tela no NetBeans
-        if ((quantidadeC - quantidadeAnterior) >= 5) {
-            acusarC = true;
-            System.out.println("Comportamento suspeito detectado!");
-        } else {
-            acusarC = false;
-            System.out.println("Tudo certo.");
-        }
-
-
-
+    public VerificacaoMultiplaDestinatarios() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                verificarDestinatarios();
+                destinatariosRecentes.clear();
+            }
+        }, 0, 1_800_000);
     }
 
-        
+    public void novaTransacao(String cpfCnpjDestinatario) {
+        if (!destinatariosRecentes.contains(cpfCnpjDestinatario)) {
+            destinatariosRecentes.add(cpfCnpjDestinatario);
+        }
+    }
 
+    private void verificarDestinatarios() {
+        if (destinatariosRecentes.size() >= 5) {
+            acusarCpfCnpj = true;
+            System.out.println("⚠️ Comportamento suspeito detectado: " + destinatariosRecentes.size() + " destinatários únicos.");
+        } else {
+            acusarCpfCnpj = false;
+            System.out.println("✅ Nenhum comportamento suspeito detectado.");
+        }
+    }
 }
