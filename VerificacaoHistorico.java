@@ -1,26 +1,39 @@
-// Destinatários com conta recente e sem histórico de movimentação.
-
-import java.util.ArrayList;
+import java.util.*;
 
 public class VerificacaoHistorico {
-    
-    // verificar tempo desde da criação das contas
-    int tempoDeConta;
 
-    // verificar histórico de movimentação
-    boolean verificarHistorico, acusarHistorico;
-    ArrayList<Integer> H = new ArrayList<>();        
+    private final Timer timer = new Timer();
+    private final ArrayList<String> historicoMovimentacoes = new ArrayList<>();
+    private final Date dataCriacaoConta;
+    private boolean acusarHistorico;
 
+    private static final long TempoContaRecente = 180L * 24 * 60 * 60 * 1000;
 
-    public void acusar(){
-        int historico = H.size();
+    public VerificacaoHistorico(Date dataCriacaoConta) {
+        this.dataCriacaoConta = dataCriacaoConta;
 
-        if (historico <= 10 && tempoDeConta <= 180) {
-            System.out.println("Conta recente e sem hisotrico de movimentação");
-        }else {
-            System.out.println("Tudo certo");
-        }
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                verificarHistorico();
+                historicoMovimentacoes.clear(); 
+            }
+        }, 0, 60_000);
     }
 
-    // conectar o array historico e o tempoDeConta com o banco de dados
+    public void novaMovimentacao(String descricao) {
+        historicoMovimentacoes.add(descricao);
+    }
+    
+    private void verificarHistorico() {
+        long idadeConta = System.currentTimeMillis() - dataCriacaoConta.getTime();
+
+        if (idadeConta <= TempoContaRecente && historicoMovimentacoes.size() <= 10) {
+            acusarHistorico = true;
+            System.out.println("Conta recente e com pouco histórico de movimentação.");
+        } else {
+            acusarHistorico = false;
+            System.out.println("Conta com movimentação aceitável ou já tem mais de 180 dias.");
+        }
+    }
 }
